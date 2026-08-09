@@ -1,14 +1,13 @@
-import { DataTypes, Sequelize } from "sequelize";
-const sequelize = new Sequelize("postgres");
+import { DataTypes } from 'sequelize';
 
-import { Article } from "./article.model.ts";
+import { sequelize } from '../config/database.ts';
 
 export const Comment = sequelize.define(
-  "Comment",
+  'Comment',
   {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true,
     },
@@ -25,24 +24,18 @@ export const Comment = sequelize.define(
     articleId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: "article_id",
+      field: 'article_id',
       references: {
-        model: "articles",
-        key: "id",
+        model: 'articles',
+        key: 'id',
       },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     },
   },
   {
-    tableName: "comments",
+    tableName: 'comments',
     timestamps: true,
     underscored: true,
   },
 );
-
-Comment.belongsTo(Article, {
-  foreignKey: "articleId",
-  targetKey: "id",
-  as: "article",
-});
