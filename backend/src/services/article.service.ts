@@ -1,4 +1,5 @@
 import { ZodError } from 'zod';
+
 import {
   CreateArticleDtoSchema,
   type CreateArticleDto,
@@ -17,10 +18,17 @@ import {
   UpdateCommentDtoSchema,
   type UpdateCommentDto,
 } from '../dto/update-comment.dto.ts';
-import { sequelize } from '../config/database.ts';
 
 const findAll = async () => {
   return await Article.findAll();
+};
+
+const findOne = async (id: string) => {
+  const article = await Article.findOne({ where: { id } });
+  if (!article) {
+    throw new NotFoundError('Article not found');
+  }
+  return article;
 };
 
 const create = async (dto: CreateArticleDto) => {
@@ -59,64 +67,41 @@ const remove = async (id: string) => {
   return await article.destroy();
 };
 
-const findArticleComments = async (id: string) => {
-  const article = await Article.findOne({ where: { id } });
+const findArticleComments = async (articleId: string) => {
+  const article = await Article.findOne({ where: { id: articleId } });
   if (!article) {
     throw new NotFoundError('Article not found');
   }
   const comments = await Comment.findAll({
-    where: {
-      articleId: id,
-    },
+    where: { articleId },
     order: [['createdAt', 'DESC']],
   });
-
   return comments;
 };
 
-const findArticleCommentById = async (id: string, commentId: string) => {
-  const article = await Article.findOne({ where: { id } });
-  if (!article) {
-    throw new NotFoundError('Article not found');
-  }
-
+const findArticleCommentById = async (articleId: string, commentId: string) => {
   const comment = await Comment.findOne({
-    where: {
-      id: commentId,
-      articleId: id,
-    },
+    where: { id: commentId, articleId },
   });
   if (!comment) {
     throw new NotFoundError('Comment not found');
   }
-
   return comment;
 };
 
-const createComment = async (id: string, dto: CreateCommentDto) => {
+const createComment = async (articleId: string, dto: CreateCommentDto) => {
   try {
     const validated = CreateCommentDtoSchema.parse(dto);
 
-    const result = await sequelize.transaction(async (t) => {
-      const article = await Article.findOne({
-        where: { id },
-        transaction: t,
-      });
+    const article = await Article.findOne({ where: { id: articleId } });
+    if (!article) {
+      throw new NotFoundError('Article not found');
+    }
 
-      if (!article) {
-        throw new NotFoundError('Article not found');
-      }
-
-      return await Comment.create(
-        {
-          articleId: id,
-          message: validated.message,
-        },
-        { transaction: t },
-      );
+    return await Comment.create({
+      articleId,
+      message: validated.message,
     });
-
-    return result;
   } catch (err) {
     if (err instanceof ZodError) {
       throw new ValidationError(err.message);
@@ -126,37 +111,21 @@ const createComment = async (id: string, dto: CreateCommentDto) => {
 };
 
 const updateComment = async (
-  id: string,
+  articleId: string,
   commentId: string,
   dto: UpdateCommentDto,
 ) => {
   try {
     const validated = UpdateCommentDtoSchema.parse(dto);
 
-    const result = await sequelize.transaction(async (t) => {
-      const article = await Article.findOne({
-        where: { id },
-        transaction: t,
-      });
-      if (!article) {
-        throw new NotFoundError('Article not found');
-      }
-
-      const comment = await Comment.findOne({
-        where: {
-          id: commentId,
-          articleId: id,
-        },
-        transaction: t,
-      });
-      if (!comment) {
-        throw new NotFoundError('Comment not found');
-      }
-
-      return await comment.update(validated, { transaction: t });
+    const comment = await Comment.findOne({
+      where: { id: commentId, articleId },
     });
+    if (!comment) {
+      throw new NotFoundError('Comment not found');
+    }
 
-    return result;
+    return await comment.update(validated);
   } catch (err) {
     if (err instanceof ZodError) {
       throw new ValidationError(err.message);
@@ -175,6 +144,7 @@ const removeComment = async (commentId: string) => {
 
 export default {
   findAll,
+  findOne,
   create,
   update,
   remove,

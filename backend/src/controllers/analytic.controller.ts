@@ -11,9 +11,7 @@ const getCommentsAnalytics = async (
   try {
     const analytics = await analyticService.getCommentsAnalytics(req.query);
 
-    res.status(200).json({
-      data: analytics,
-    });
+    res.status(200).json(analytics);
   } catch (err) {
     next(err);
   }

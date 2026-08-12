@@ -4,6 +4,7 @@ const router = express.Router();
 import articleController from '../controllers/article.controller.ts';
 
 router.get('/', articleController.findAll);
+router.get('/:id', articleController.findOne);
 router.post('/', articleController.create);
 router.patch('/:id', articleController.update);
 router.delete('/:id', articleController.remove);

@@ -1,9 +1,31 @@
-import { DataTypes } from 'sequelize';
-
+import { DataTypes, Model, type Optional } from 'sequelize';
 import { sequelize } from '../config/database.ts';
 
-export const Comment = sequelize.define(
-  'Comment',
+interface CommentAttributes {
+  id: string;
+  message: string;
+  articleId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface CommentCreationAttributes extends Optional<
+  CommentAttributes,
+  'id' | 'createdAt' | 'updatedAt'
+> {}
+
+export class Comment
+  extends Model<CommentAttributes, CommentCreationAttributes>
+  implements CommentAttributes
+{
+  public id!: string;
+  public message!: string;
+  public articleId!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Comment.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -14,12 +36,6 @@ export const Comment = sequelize.define(
     message: {
       type: DataTypes.TEXT,
       allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
     },
     articleId: {
       type: DataTypes.UUID,
@@ -32,8 +48,17 @@ export const Comment = sequelize.define(
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'created_at',
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updated_at',
+    },
   },
   {
+    sequelize,
     tableName: 'comments',
     timestamps: true,
     underscored: true,

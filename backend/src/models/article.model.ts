@@ -1,9 +1,31 @@
-import { DataTypes } from 'sequelize';
-
+import { DataTypes, Model, type Optional } from 'sequelize';
 import { sequelize } from '../config/database.ts';
 
-export const Article = sequelize.define(
-  'Article',
+interface ArticleAttributes {
+  id: string;
+  title: string;
+  content: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface ArticleCreationAttributes extends Optional<
+  ArticleAttributes,
+  'id' | 'createdAt' | 'updatedAt'
+> {}
+
+export class Article
+  extends Model<ArticleAttributes, ArticleCreationAttributes>
+  implements ArticleAttributes
+{
+  public id!: string;
+  public title!: string;
+  public content!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Article.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -21,12 +43,15 @@ export const Article = sequelize.define(
     },
     createdAt: {
       type: DataTypes.DATE,
+      field: 'created_at',
     },
     updatedAt: {
       type: DataTypes.DATE,
+      field: 'updated_at',
     },
   },
   {
+    sequelize,
     tableName: 'articles',
     timestamps: true,
     underscored: true,
