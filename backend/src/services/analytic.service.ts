@@ -47,7 +47,7 @@ const getCommentsAnalytics = async (query: AnalyticQueryDto) => {
           title: article.getDataValue('title'),
           createdAt: article.getDataValue('createdAt'),
         },
-        comments: article.comments.map((comment) => ({
+        comments: article.toJSON().comments.map((comment) => ({
           id: comment.id,
           message: comment.message,
           createdAt: comment.createdAt,

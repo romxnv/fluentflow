@@ -1,0 +1,4 @@
+export const SET_LOADING = "SET_LOADING";
+export const SET_ERROR = "SET_ERROR";
+export const SET_ANALYTICS_DATA = "SET_ANALYTICS_DATA";
+export const CLEAR_ANALYTICS = "CLEAR_ANALYTICS";
